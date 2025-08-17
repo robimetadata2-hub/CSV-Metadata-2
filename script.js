@@ -896,7 +896,7 @@ Ensure the entire response is only the JSON object, without markdown formatting.
     elements.themeColorSwatches.addEventListener('click', (e) => e.target.dataset.theme && applyTheme(e.target.dataset.theme));
     elements.bgColorSwatches.addEventListener('click', (e) => e.target.dataset.bg && applyBackground(e.target.dataset.bg));
 
-    applyTheme(localStorage.getItem('appTheme') || 'pink');
+    applyTheme(localStorage.getItem('appTheme') || 'orange');
     applyBackground(localStorage.getItem('appBackground') || 'slate');
     switchMode('metadata'); 
     loadApiKeys(); 
