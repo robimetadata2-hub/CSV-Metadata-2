@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Link to your external CSS file -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header / Navigation Bar -->
+        <header class="flex flex-wrap justify-between items-center mb-10">
+            <!-- Logo and Title -->
+            <div class="flex items-center gap-x-3">
+                <img src="https://yt3.ggpht.com/tvitU0FQhBAvLgDS0EUvIHQvPNiMPAC09aF7OF3IiEBYSgJw0wTw_8WNVsNAXuoredsCNys1nQ=s176-c-k-c0x00ffffff-no-rj-mo" alt="Logo" class="h-10 w-10 rounded-full">
+                <h1 class="text-3xl font-bold text-white">CSV PRO</h1>
+            </div>
+            <nav class="flex items-center gap-x-2 md:gap-x-4 mt-4 md:mt-0">
+                <!-- New Animated Button -->
+                <a href="https://chromewebstore.google.com/detail/image-to-prompt-by-robi-t/koccpomgiggapkmlccpahgiickhacdch?hl=en-US&utm_source=ext_sidebar" id="get-extension-btn" class="extension-btn">Get Extension</a>
+                <a href="index.html" class="text-gray-400 hover:text-white transition">Home</a>
+                <a href="#" class="text-gray-400 hover:text-white transition">Features</a>
+                <button id="history-btn" class="text-gray-400 hover:text-white transition">History</button>
+                <a href="#" class="text-gray-400 hover:text-white transition">Pricing</a>
+                <a href="#" class="text-gray-400 hover:text-white transition">Contact</a>
+                <button id="metadata-btn" class="nav-btn font-semibold py-2 px-4 rounded-lg transition-all">Generate MetaData</button>
+                <button id="prompt-btn" class="nav-btn font-semibold py-2 px-4 rounded-lg transition-all">Image To Prompt</button>
+                
+                <!-- New Auth Section -->
+                <div class="relative">
+                    <button id="login-btn" class="action-btn bg-blue-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-lg transition-all">Login</button>
+                    
+                    <div id="profile-section" class="hidden">
+                        <button id="profile-pic-btn">
+                            <img id="profile-pic-img-nav" src="" alt="User Profile" class="w-10 h-10 rounded-full border-2 border-slate-500 hover:border-pink-500 transition">
+                        </button>
+                
+                        <div id="profile-card" class="hidden absolute right-0 mt-2 w-64 main-panel border rounded-xl p-4 z-20 text-center">
+                            <img id="profile-pic-img-card" src="" alt="User Profile" class="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-slate-600">
+                            <p id="profile-email" class="text-white font-semibold mb-4 truncate"></p>
+                            <button id="logout-btn-card" class="w-full action-btn bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-all">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:items-start">
+            
+            <!-- Left Column Wrapper for Sticky Positioning -->
+            <div class="lg:col-span-1 lg:sticky top-8">
+                <aside class="space-y-6 max-h-[calc(100vh-5rem)] overflow-y-auto pr-4 sidebar-scroll">
+                    <!-- Customization (Metadata) -->
+                    <div id="metadata-customization" class="p-6 main-panel border rounded-xl" data-mode="metadata">
+                        <h2 class="text-xl font-semibold text-white mb-4">Customization</h2>
+                        <div class="space-y-5">
+                            <div>
+                                <label for="title-words" class="block mb-2 text-sm font-medium text-gray-400">Title Words (<span id="title-words-val">15</span>)</label>
+                                <input id="title-words" type="range" min="5" max="25" value="15" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer custom-slider">
+                            </div>
+                            <div>
+                                <label for="keywords-count" class="block mb-2 text-sm font-medium text-gray-400">Keywords (<span id="keywords-count-val">30</span>)</label>
+                                <input id="keywords-count" type="range" min="10" max="50" value="30" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer custom-slider">
+                            </div>
+                            <div>
+                                <label for="desc-words" class="block mb-2 text-sm font-medium text-gray-400">Description Words (<span id="desc-words-val">40</span>)</label>
+                                <input id="desc-words" type="range" min="20" max="80" value="40" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer custom-slider">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Customization (Prompt) -->
+                    <div id="prompt-customization" class="p-6 main-panel border rounded-xl hidden" data-mode="prompt">
+                        <h2 class="text-xl font-semibold text-white mb-4">Customization</h2>
+                        <div class="space-y-5">
+                            <div>
+                                <label for="prompt-words" class="block mb-2 text-sm font-medium text-gray-400">Prompt Words (<span id="prompt-words-val">60</span>)</label>
+                                <input id="prompt-words" type="range" min="10" max="150" value="60" class="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer custom-slider">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SILHOUETTE TOGGLE PANEL - Prompt mode only -->
+                    <div class="p-6 main-panel border rounded-xl hidden" data-mode="prompt">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-x-2">
+                                <h3 class="text-lg font-semibold text-white">Silhouette</h3>
+                                <div class="group relative flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-900 text-gray-300 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                        When enabled, "silhoutte style" will be added to the end of the generated prompt.
+                                        <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <label for="silhouette-toggle" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" id="silhouette-toggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- WHITE BACKGROUND TOGGLE PANEL - Prompt mode only -->
+                    <div class="p-6 main-panel border rounded-xl hidden" data-mode="prompt">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-x-2">
+                                <h3 class="text-lg font-semibold text-white">White Background</h3>
+                                <div class="group relative flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-900 text-gray-300 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                        When enabled, "white background" will be added to the end of the generated prompt.
+                                        <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <label for="white-background-toggle" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" id="white-background-toggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- TRANSPARENT BACKGROUND TOGGLE PANEL - Prompt mode only -->
+                    <div class="p-6 main-panel border rounded-xl hidden" data-mode="prompt">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-x-2">
+                                <h3 class="text-lg font-semibold text-white">Transparent Background</h3>
+                                <div class="group relative flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-900 text-gray-300 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                        When enabled, "transparent background" will be added to the end of the generated prompt.
+                                        <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <label for="transparent-background-toggle" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" id="transparent-background-toggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- File Type -->
+                    <div class="p-6 main-panel border rounded-xl" data-mode="metadata">
+                        <label for="file-type" class="block mb-2 text-sm font-medium text-gray-400">File Type</label>
+                        <select id="file-type" class="w-full p-2 rounded-lg custom-select">
+                            <option value="">Select File Type</option>
+                            <option value="jpg">JPG</option>
+                            <option value="png">PNG</option>
+                            <option value="svg">SVG</option>
+                            <option value="eps">EPS (Vector)</option>
+                        </select>
+                    </div>
+                     <!-- Title Options -->
+                     <div class="p-6 main-panel border rounded-xl space-y-4" data-mode="metadata">
+                          <label for="title-options" class="block text-sm font-medium text-gray-400">Title Options</label>
+                          <select id="title-options" class="w-full p-2 rounded-lg custom-select">
+                              <option value="none">Creative</option>
+                              <option value="suffix_silhouette">Append: silhouette</option>
+                              <option value="suffix_white_bg">Append: white background</option>
+                              <option value="suffix_transparent_bg">Append: transparent background</option>
+                              <option value="suffix_illustration">Append: illustration </option>
+                              <option value="suffix_vector">Append: vector </option>
+                          </select>
+                          <input type="text" id="custom-title-suffix" placeholder="Enter custom text to append" class="w-full p-2 rounded-lg custom-input">
+                     </div>
+                    <!-- Custom Prompt -->
+                    <div class="p-6 main-panel border rounded-xl space-y-4" data-mode="metadata">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-x-2">
+                                <h3 class="text-lg font-semibold text-white">CUSTOM PROMPT</h3>
+                                <div class="group relative flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 cursor-pointer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-900 text-gray-300 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                                        When enabled, Gemini will use your custom prompt to generate the Title, Description, and Keywords based on your instructions.
+                                        <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <label for="custom-prompt-toggle" class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="custom-prompt-toggle" class="sr-only peer">
+                                <div class="w-11 h-6 bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                            </label>
+                        </div>
+                        <div id="custom-prompt-container" class="hidden">
+                            <textarea id="custom-prompt-textarea" rows="4" placeholder="Enter your custom prompt here. For example: 'Create a title, description, and keywords for a valentine's day vector illustration.'" class="w-full p-2 rounded-lg custom-textarea"></textarea>
+                        </div>
+                    </div>
+
+                      <!-- Platforms -->
+                       <div class="p-6 main-panel border rounded-xl" data-mode="metadata">
+                           <label for="platforms" class="block mb-2 text-sm font-medium text-gray-400">Platforms</label>
+                           <select id="platforms" class="w-full p-2 rounded-lg custom-select">
+                               <option value="Genaral">Genaral</option>
+                               <option value="Adobe Stock">Adobe Stock</option>
+                               <option value="Shutterstock">Shutterstock</option>
+                               <option value="Freepik">Freepik</option>
+                               <option value="Vecteezy">Vecteezy</option>
+                           </select>
+                      </div>
+
+                    <!-- Gemini API Key -->
+                    <div id="api-key-panel" class="p-6 main-panel border rounded-xl" data-mode="metadata">
+                        <h2 class="text-xl font-semibold text-white mb-4">Gemini API Keys</h2>
+                        <p class="text-sm text-gray-400 mb-2">Add one or more Gemini API keys. The app will automatically switch to the next key if one reaches its usage limit.</p>
+<a href="https://aistudio.google.com/app/apikey" target="_blank" id="get-api-key-btn" class="inline-block text-center w-full mb-4 action-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">Get API Key</a>
+                        <div id="api-key-list" class="space-y-3 mb-4">
+                            <!-- API Key inputs will be dynamically inserted here -->
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <button id="add-api-key-btn" class="action-btn theme-btn font-bold py-2 px-4 rounded-lg transition-all text-sm">Add Key</button>
+                            <button id="save-api-keys-btn" class="action-btn theme-btn font-bold py-2 px-4 rounded-lg transition-all text-sm">Save All Keys</button>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Right Column: Upload and Results -->
+            <main class="lg:col-span-2 space-y-8">
+                <!-- Upload Area -->
+                <div id="upload-area" class="main-panel border rounded-xl p-6 text-center cursor-pointer border-2 border-dashed border-slate-600 transition-all duration-300 flex flex-col items-center justify-center min-h-[30rem]">
+                    <input type="file" id="file-upload" class="hidden" accept="image/jpeg, image/png, image/svg+xml" multiple>
+                    <svg class="w-16 h-16 text-slate-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                    </svg>
+                    <h3 id="upload-title" class="text-xl font-semibold text-white">Click to upload or drag and drop</h3>
+                    <p id="upload-subtitle" class="text-gray-400">Upload multiple images for metadata generation</p>
+                </div>
+
+                <!-- Results Area -->
+                <div id="results-area" class="hidden">
+                     <div class="main-panel border rounded-xl p-6">
+                         <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+                              <h2 id="results-title" class="text-2xl font-semibold text-white">Generated Data</h2>
+                              <div id="action-buttons" class="flex gap-4">
+                                  <button id="save-project-btn" class="action-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 hidden">save project</button>
+                                  <!-- Download Dropdown -->
+                                  <div class="relative inline-block text-left">
+                                      <div>
+                                          <button type="button" id="download-btn" class="inline-flex justify-center w-full rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-green-600 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-green-500">
+                                              Download All
+                                              <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                              </svg>
+                                          </button>
+                                      </div>
+                                      <div id="download-options" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-slate-700 ring-1 ring-black ring-opacity-5 hidden z-10">
+                                          <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                                              <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="csv">Download CSV</a>
+                                              <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="json">Download JSON</a>
+                                              <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="xml">Download XML</a>
+                                          </div>
+                                      </div>
+                                  </div>
+                                  <button id="clear-all-btn" class="action-btn bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 flex items-center gap-2">
+                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                                      Clear All
+                                  </button>
+                              </div>
+                         </div>
+
+                        <!-- Generation Controls Panel -->
+                        <div id="generation-controls" class="hidden my-6">
+                            <div class="main-panel border rounded-xl p-6 md:p-8 text-center">
+                                <!-- Initial State -->
+                                <div id="initial-gen-view">
+                                    <h2 class="text-2xl font-bold text-white mb-2">Uploaded Images</h2>
+                                    <p class="text-gray-300 mb-6"><span id="file-count">0</span> image(s) selected and ready to generate.</p>
+                                    <button id="generate-now-btn" class="w-full text-white font-bold py-3 px-4 rounded-lg transition-all text-lg gradient-btn disabled:opacity-50 disabled:cursor-not-allowed">Generate Now</button>
+                                </div>
+                                <!-- Generating State -->
+                                <div id="generating-view" class="hidden">
+                                     <h2 class="text-2xl font-bold text-white mb-4">Generating...</h2>
+                                     <div class="w-full bg-slate-700 rounded-full h-4 relative overflow-hidden">
+                                         <div id="progress-bar" class="h-4 rounded-full" style="width: 0%;"></div>
+                                     </div>
+                                     <p id="progress-text" class="text-gray-300 mt-3 text-sm">Processing 0 of 0...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="generated-content-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <!-- Result cards will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm p-4 mt-8">
+            <span>© 2025 Robi Technology. All Rights Reserved.</span>
+        </footer>
+        
+        <!-- Floating Settings Button -->
+        <div id="settings-btn-container">
+            <button id="settings-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed bottom-10 right-10 bg-green-500 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 translate-y-5 transition-all duration-300">
+             Message
+        </div>
+
+        <!-- Modal Panels -->
+        <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+        
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="modal-panel fixed inset-0 flex items-center justify-center z-50 opacity-0 pointer-events-none scale-95">
+            <div class="main-panel border p-6 rounded-lg w-full max-w-md relative">
+                <button id="close-settings-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <h2 class="text-2xl font-bold text-white mb-6">Settings</h2>
+                <!-- Theme Color Section -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-white mb-3">Theme Color</h3>
+                    <div id="theme-color-swatches" class="flex gap-4">
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#ec4899]" data-theme="pink"></button>
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#3b82f6]" data-theme="blue"></button>
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#22c55e]" data-theme="green"></button>
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#f97316]" data-theme="orange"></button>
+                    </div>
+                </div>
+                <!-- Background Color Section -->
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-3">Background Color</h3>
+                    <div id="bg-color-swatches" class="flex flex-wrap gap-4">
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#0f172a]" data-bg="slate"></button>
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#111827]" data-bg="gray"></button>
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#18181b]" data-bg="zinc"></button>
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#1c1917]" data-bg="stone"></button>
+                        <button class="color-swatch w-8 h-8 rounded-full bg-[#171717]" data-bg="neutral"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Panel -->
+        <div id="history-panel" class="modal-panel fixed inset-0 flex items-center justify-center z-50 opacity-0 pointer-events-none scale-95">
+            <div class="main-panel border p-6 rounded-lg w-full max-w-lg relative max-h-[80vh] flex flex-col">
+                <button id="close-history-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <h2 class="text-2xl font-bold text-white mb-6">Saved Projects</h2>
+                <div id="history-list" class="flex-grow overflow-y-auto space-y-3 pr-2">
+                    <!-- History items will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Modal -->
+        <div id="login-modal" class="modal-panel fixed inset-0 flex items-center justify-center z-50 opacity-0 pointer-events-none scale-95">
+            <div class="main-panel border-2 border-slate-700 p-8 rounded-3xl w-full max-w-lg relative overflow-hidden shadow-2xl text-center">
+                <!-- Close Button -->
+                <button id="close-login-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white z-20">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+        
+                <!-- Founder Card -->
+                <div class="founder-card absolute top-4 right-4 md:top-6 md:right-6 bg-slate-900/50 backdrop-blur-sm p-3 rounded-xl flex items-center gap-3 z-10 text-left">
+                    <div>
+                        <p class="font-bold text-white text-sm">MD. RABIUL ISLAM</p>
+                        <p class="text-xs text-slate-300">Founder</p>
+                        <p class="text-xs text-slate-300">Robi Technology</p>
+                    </div>
+                    <img src="images/robi.png" alt="Founder" class="w-12 h-12 rounded-full border-2 border-slate-500">
+                </div>
+        
+                <!-- Main Content -->
+                <div class="w-full flex flex-col justify-center items-center h-full pt-16">
+                    <h2 class="text-5xl font-bold text-white mb-4">Welcome Back!</h2>
+                    <p class="text-gray-400 mb-8">Please login to continue generating Metadata</p>
+                    <button id="login-google-btn" class="w-full max-w-xs flex items-center justify-center gap-3 text-white font-bold py-3 px-4 rounded-lg transition-all text-lg">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google G Logo" class="w-6 h-6">
+                        Login with Google
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- Link to your external JS file -->
+    <script src="script.js"></script>
+</body>
+</html>
