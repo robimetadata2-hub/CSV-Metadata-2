@@ -732,7 +732,7 @@ Ensure the entire response is only the JSON object, without markdown formatting.
         };
 
         let content, mimeType;
-        const filename = `CsvPro_Metadata.${format}`;
+        const filename = `Robi_Metadata.${format}`;
 
         if (format === 'csv') { content = convertToCSV(data); mimeType = 'text/csv;charset=utf-8;'; } 
         else if (format === 'json') { content = convertToJSON(data); mimeType = 'application/json;charset=utf-8;'; }
