@@ -187,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         elements.uploadTitle.textContent = newMode === 'metadata' ? 'Click to upload or drag and drop' : 'Upload Images to Generate Prompts';
-        elements.uploadSubtitle.textContent = newMode === 'metadata' ? 'Upload multiple images for metadata generation' : 'Multiple JPG, PNG, or SVG files (max 5MB each)';
+        elements.uploadSubtitle.textContent = newMode === 'metadata' ? 'Upload multiple images for metadata generation' : 'Multiple JPEG, PNG, or SVG files (max 5MB each)';
         elements.resultsTitle.textContent = newMode === 'metadata' ? 'Generated Data' : 'Generated Prompts';
         clearResults();
     }
