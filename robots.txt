@@ -1,6 +1,6 @@
-# Allow all web crawlers to access all content
+# Allow all search engines to crawl the entire site.
 User-agent: *
-allow:
+Allow: /
 
-# Sitemap location
+# Point to the sitemap file.
 Sitemap: http://robimetadata.com/sitemap.xml
