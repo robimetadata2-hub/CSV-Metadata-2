@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Point to the sitemap file.
-Sitemap: http://robimetadata.com/sitemap.xml
+Sitemap: https://robimetadata.com/sitemap.xml
