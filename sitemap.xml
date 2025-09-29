@@ -6,27 +6,27 @@
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 <!-- created with Gemini -->
 <url>
-  <loc>http://robimetadata.com/</loc>
+  <loc>https://robimetadata.com/</loc>
   <lastmod>2025-08-17T06:09:00+00:00</lastmod>
   <priority>1.00</priority>
 </url>
 <url>
-  <loc>http://robimetadata.com/index.html</loc>
+  <loc>https://robimetadata.com/index.html</loc>
   <lastmod>2025-08-17T06:09:00+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://robimetadata.com/features.html</loc>
+  <loc>https://robimetadata.com/features.html</loc>
   <lastmod>2025-08-17T06:09:00+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://robimetadata.com/pricing.html</loc>
+  <loc>https://robimetadata.com/pricing.html</loc>
   <lastmod>2025-08-17T06:09:00+00:00</lastmod>
   <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://robimetadata.com/contact.html</loc>
+  <loc>https://robimetadata.com/contact.html</loc>
   <lastmod>2025-08-17T06:09:00+00:00</lastmod>
   <priority>0.80</priority>
 </url>
