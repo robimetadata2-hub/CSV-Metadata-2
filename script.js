@@ -556,7 +556,7 @@ Ensure the entire response is only the JSON object, without markdown formatting.
 
         for (let i = 0; i < apiKeys.length; i++) {
             const apiKey = apiKeys[currentApiKeyIndex];
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
             const payload = { contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: mimeType, data: base64Data } }] }] };
 
             try {
