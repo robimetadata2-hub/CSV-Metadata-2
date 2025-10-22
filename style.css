@@ -276,26 +276,3 @@ body {
     }
 }
 /* --- End of New Button Styles --- */
-
-/* --- New Login Modal Styles --- */
-#login-modal .main-panel {
-    height: 450px;
-}
-
-.founder-card {
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-#login-google-btn {
-    background-color: rgba(255, 255, 255, 0.2); /* orange-500 */
-    border: 1px solid #fb923c; /* orange-400 */
-}
-#login-google-btn:hover {
-    background-color: #ea580c; /* orange-600 */
-}
-
-/* --- Profile Card Styles --- */
-#profile-card {
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
