@@ -1,25 +1,30 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Supabase Configuration ---
+    // IMPORTANT: Replace with your Supabase project's URL and Anon Key
+    const SUPABASE_URL = 'https://clbzukasviiimihwshtk.supabase.co'; 
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYnp1a2FzdmlpaW1paHdzaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MTMyMDUsImV4cCI6MjA3MDk4OTIwNX0.EApf7bcbKwVNBIUIfO0_4BotG-T4aZFb2wHwCMdo3_M';
+    
+    let supabaseClient = null;
+
+    // Only initialize Supabase and add auth listeners if the credentials are valid and provided
+    if (SUPABASE_URL && SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+            console.error("Error initializing Supabase client:", e.message);
+        }
+    } else {
+        console.warn("Supabase credentials are not provided. Authentication features will be disabled.");
+    }
+
+    let metadataState = { files: [], contentHTML: '', resultsVisible: false };
+    let promptState = { files: [], contentHTML: '', resultsVisible: false };
     let currentMode = null;
     let filesToProcess = [];
     let apiKeys = [];
     let currentApiKeyIndex = 0;
-    
-    // --- Supabase Configuration ---
-    const SUPABASE_URL = 'https://clbzukasviiimihwshtk.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsYnp1a2FzdmlpaW1paHdzaHRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MTMyMDUsImV4cCI6MjA3MDk4OTIwNX0.EApf7bcbKwVNBIUIfO0_4BotG-T4aZFb2wHwCMdo3_M';
-    
-    let supabase;
-    try {
-        if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-            console.warn("Supabase credentials are not set. Authentication will be disabled.");
-        } else {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-    } catch (error) {
-        console.error("Error initializing Supabase:", error);
-    }
-
-    let currentUser = null;
+    let requestCountInWindow = 0;
+    let windowStartTime = Date.now();
 
     const elements = {
         uploadArea: document.getElementById('upload-area'),
@@ -63,25 +68,68 @@ document.addEventListener('DOMContentLoaded', () => {
         customPromptTextarea: document.getElementById('custom-prompt-textarea'),
         titleOptions: document.getElementById('title-options'),
         customTitleSuffix: document.getElementById('custom-title-suffix'),
-        // Auth elements
+        geminiModelSelect: document.getElementById('gemini-model'),
         loginBtn: document.getElementById('login-btn'),
-        profileSection: document.getElementById('profile-section'),
-        profilePicBtn: document.getElementById('profile-pic-btn'),
-        profilePicImgNav: document.getElementById('profile-pic-img-nav'),
-        profileCard: document.getElementById('profile-card'),
-        profilePicImgCard: document.getElementById('profile-pic-img-card'),
-        profileEmail: document.getElementById('profile-email'),
-        logoutBtnCard: document.getElementById('logout-btn-card'),
-        loginModal: document.getElementById('login-modal'),
-        closeLoginBtn: document.getElementById('close-login-btn'),
-        loginGoogleBtn: document.getElementById('login-google-btn'),
+        logoutBtn: document.getElementById('logout-btn'),
+        userProfile: document.getElementById('user-profile'),
+        userDropdown: document.getElementById('user-dropdown'),
+        userAvatar: document.getElementById('user-avatar'),
+        userEmail: document.getElementById('user-email'),
     };
 
+    // --- Authentication Functions ---
+    async function loginWithGoogle() {
+        if (!supabaseClient) {
+            showToast("Supabase is not configured. Please add URL and Key in the code.", true);
+            return;
+        }
+        const { error } = await supabaseClient.auth.signInWithOAuth({ provider: 'google' });
+        if (error) console.error('Error logging in:', error.message);
+    }
+
+    async function logout() {
+        if (!supabaseClient) return;
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) console.error('Error logging out:', error.message);
+    }
+
+    function updateUI(user) {
+        if (user) {
+            elements.loginBtn.classList.add('hidden');
+            elements.userProfile.classList.remove('hidden');
+            elements.userProfile.classList.add('flex');
+            elements.userAvatar.src = user.user_metadata?.avatar_url || 'https://placehold.co/40x40/1e293b/cbd5e1?text=U';
+            elements.userEmail.textContent = user.email;
+        } else {
+            elements.loginBtn.classList.remove('hidden');
+            elements.userProfile.classList.add('hidden');
+            elements.userProfile.classList.remove('flex');
+            elements.userDropdown.classList.add('hidden');
+        }
+    }
+    
+    if (supabaseClient) {
+        // --- Check initial session ---
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            updateUI(session?.user || null);
+        }
+        checkSession();
+
+        // --- Listen for auth state changes ---
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            const user = session?.user || null;
+            updateUI(user);
+        });
+    }
+
+
     const THEMES = {
+		orange: { primary: '#f97316', from: '#fb923c', to: '#f97316' },
         pink: { primary: '#ec4899', from: '#f97316', to: '#ec4899' },
         blue: { primary: '#3b82f6', from: '#3b82f6', to: '#818cf8' },
         green: { primary: '#22c55e', from: '#4ade80', to: '#22c55e' },
-        orange: { primary: '#f97316', from: '#fb923c', to: '#f97316' },
+        
     };
     const BACKGROUNDS = {
         slate: { bg: '#0f172a', panel: '#1e293b', border: '#334155' },
@@ -91,56 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         neutral: { bg: '#171717', panel: '#262626', border: '#404040' },
     };
     
-    // --- Authentication Functions ---
-    async function signInWithGoogle() {
-        if (!supabase) return showToast("Authentication is not configured.", true);
-        const { error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-        });
-        if (error) {
-            console.error('Error logging in with Google:', error);
-            showToast(`Error: ${error.message}`, true);
-        }
-    }
-
-    async function signOut() {
-        if (!supabase) return;
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error('Error logging out:', error);
-            showToast(`Error: ${error.message}`, true);
-        }
-    }
-
-    function updateAuthUI(user) {
-        currentUser = user;
-        if (user) {
-            elements.loginBtn.classList.add('hidden');
-            elements.profileSection.classList.remove('hidden');
-            
-            const avatarUrl = user.user_metadata?.avatar_url || `https://placehold.co/40x40/1e293b/cbd5e1?text=${user.email[0].toUpperCase()}`;
-            elements.profilePicImgNav.src = avatarUrl;
-            elements.profilePicImgCard.src = avatarUrl.replace('s96-c', 's200-c'); // Higher resolution for card
-            elements.profileEmail.textContent = user.email;
-
-        } else {
-            elements.loginBtn.classList.remove('hidden');
-            elements.profileSection.classList.add('hidden');
-            elements.profileCard.classList.add('hidden'); // Ensure card is hidden on logout
-        }
-    }
-    
-    function setupAuthListeners() {
-        if (!supabase) return;
-        supabase.auth.onAuthStateChange((_event, session) => {
-            const user = session?.user ?? null;
-            updateAuthUI(user);
-            if (user) {
-                closeModal(elements.loginModal, elements.modalOverlay);
-            }
-        });
-    }
-
     function applyTheme(themeName) {
         const theme = THEMES[themeName];
         if (!theme) return;
@@ -172,24 +170,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function switchMode(newMode) {
         if (currentMode === newMode) return;
+
+        // Save state of the mode we are leaving
+        if (currentMode) {
+            const stateToSave = (currentMode === 'metadata') ? metadataState : promptState;
+            stateToSave.contentHTML = elements.contentGrid.innerHTML;
+            stateToSave.files = filesToProcess;
+            stateToSave.resultsVisible = !elements.resultsArea.classList.contains('hidden');
+        }
+
         currentMode = newMode;
+
+        // Update button styles
         elements.metadataBtn.classList.toggle('active', newMode === 'metadata');
         elements.metadataBtn.classList.toggle('inactive', newMode !== 'metadata');
         elements.promptBtn.classList.toggle('active', newMode === 'prompt');
         elements.promptBtn.classList.toggle('inactive', newMode !== 'prompt');
         
+        // Show/hide UI panels based on mode
         document.querySelectorAll('[data-mode]').forEach(el => {
-            if (el.dataset.mode === newMode) {
-                el.classList.remove('hidden');
-            } else {
-                el.classList.add('hidden');
-            }
+            el.classList.toggle('hidden', el.dataset.mode !== newMode);
         });
 
+        // Update text labels
         elements.uploadTitle.textContent = newMode === 'metadata' ? 'Click to upload or drag and drop' : 'Upload Images to Generate Prompts';
-        elements.uploadSubtitle.textContent = newMode === 'metadata' ? 'Upload multiple images for metadata generation' : 'Multiple JPEG, PNG, or SVG files (max 5MB each)';
+        elements.uploadSubtitle.textContent = newMode === 'metadata' ? 'Upload multiple images for metadata generation' : 'Multiple JPG, PNG, or SVG files (max 5MB each)';
         elements.resultsTitle.textContent = newMode === 'metadata' ? 'Generated Data' : 'Generated Prompts';
-        clearResults();
+
+        // Restore state of the new mode
+        const stateToRestore = (newMode === 'metadata') ? metadataState : promptState;
+        elements.contentGrid.innerHTML = stateToRestore.contentHTML;
+        filesToProcess = stateToRestore.files;
+
+        if (stateToRestore.resultsVisible) {
+            elements.resultsArea.classList.remove('hidden');
+            elements.uploadArea.classList.add('hidden');
+            elements.generationControls.classList.add('hidden');
+            elements.saveProjectBtn.classList.remove('hidden');
+        } else {
+            elements.resultsArea.classList.add('hidden');
+            elements.uploadArea.classList.remove('hidden');
+            elements.generationControls.classList.add('hidden');
+            elements.saveProjectBtn.classList.add('hidden');
+        }
     }
 
     function clearResults() {
@@ -201,16 +224,16 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.contentGrid.innerHTML = '';
         elements.saveProjectBtn.classList.add('hidden');
         updateProgressBar(0, 0, 0, 0, 0);
+
+        // Also clear the stored state for the current mode
+        if (currentMode === 'metadata') {
+            metadataState = { files: [], contentHTML: '', resultsVisible: false };
+        } else if (currentMode === 'prompt') {
+            promptState = { files: [], contentHTML: '', resultsVisible: false };
+        }
     }
 
     function handleFileSelect(event) {
-        // Check for login before handling files
-        if (!currentUser) {
-            openModal(elements.loginModal, elements.modalOverlay);
-            showToast("Please login to upload images.", true);
-            return;
-        }
-
         const files = event.target?.files || event.dataTransfer?.files;
         if (!files) return;
 
@@ -263,15 +286,25 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.generatingView.classList.remove('hidden');
 
         let processedCount = 0;
+        let successCount = 0;
+        let failedCount = 0;
         const totalFiles = filesToProcess.length;
         updateProgressBar(0, processedCount, totalFiles, 0, 0);
 
-        for (const [index, file] of filesToProcess.entries()) {
-            await processSingleFile(file, index); // This will hang until it succeeds
-            processedCount++;
-            // Update progress bar with success count, failed count is always 0 in this logic
-            updateProgressBar((processedCount / totalFiles) * 100, processedCount, totalFiles, processedCount, 0);
-        }
+        const promises = filesToProcess.map(async (file, index) => {
+            try {
+                await processSingleFile(file, index);
+                successCount++;
+            } catch (error) {
+                failedCount++;
+                console.error(`Final error for ${file.name}:`, error.message);
+            } finally {
+                processedCount++;
+                updateProgressBar((processedCount / totalFiles) * 100, processedCount, totalFiles, successCount, failedCount);
+            }
+        });
+
+        await Promise.all(promises);
 
         showToast("Generation complete!");
         elements.generationControls.classList.add('hidden');
@@ -282,52 +315,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.querySelector(`[data-id="file-${index}"]`);
         if (!card) return;
         const cardContentEl = card.querySelector('.card-dynamic-content');
-        
-        let attempt = 1;
-        while (true) { // Infinite loop until success
-            try {
-                cardContentEl.innerHTML = `<div class="flex items-center justify-center text-pink-400"><div class="w-5 h-5 rounded-full animate-spin border-2 border-solid border-slate-500 card-loading-spinner mr-2"></div>Generating... (Attempt ${attempt})</div>`;
 
-                const { base64Data, mimeType, compressedSize } = await processFileForApi(file);
-                
-                const originalSize = file.size;
-                const sizeInfoPlaceholder = card.querySelector('.size-info-placeholder');
-                if (sizeInfoPlaceholder) {
-                    sizeInfoPlaceholder.innerHTML = `Size: ${formatBytes(originalSize)} &rarr; ${formatBytes(compressedSize)}`;
-                }
+        try {
+            cardContentEl.innerHTML = `<div class="flex items-center justify-center text-pink-400"><div class="w-5 h-5 rounded-full animate-spin border-2 border-solid border-slate-500 card-loading-spinner mr-2"></div>Generating...</div>`;
 
-                const data = currentMode === 'metadata'
-                    ? await getMetadataFromGemini(base64Data, mimeType, file.name, file.type)
-                    : await getPromptFromGemini(base64Data, mimeType, file.name);
-                
-                if (currentMode === 'metadata') {
-                    renderMetadataCard(cardContentEl, data, index);
-                } else {
-                    if (data && data.prompt) {
-                        let promptText = data.prompt.trim();
-                        if (promptText.endsWith('.')) {
-                            promptText = promptText.slice(0, -1);
-                        }
+            const { base64Data, mimeType, compressedSize } = await processFileForApi(file);
 
-                        const isSilhouette = document.getElementById('silhouette-toggle').checked;
-                        const isWhiteBackground = document.getElementById('white-background-toggle').checked;
-                        const isTransparentBackground = document.getElementById('transparent-background-toggle').checked;
-                        
-                        if (isSilhouette) promptText += ' silhoutte style';
-                        if (isWhiteBackground) promptText += ' white background';
-                        if (isTransparentBackground) promptText += ' transparent background';
-                        data.prompt = promptText.trim();
-                    }
-                    renderPromptCard(cardContentEl, data, index);
-                }
-                return; // Success, exit the while loop and the function
-            } catch (error) {
-                console.error(`Attempt ${attempt} failed for file ${file.name}:`, error);
-                attempt++;
-                cardContentEl.innerHTML = `<div class="text-center text-amber-400 p-2 bg-amber-900/20 rounded-md"><strong>API Error:</strong> ${error.message}. Retrying...</div>`;
-                // Wait 5 seconds before the next attempt
-                await new Promise(resolve => setTimeout(resolve, 5000));
+            const originalSize = file.size;
+            const sizeInfoPlaceholder = card.querySelector('.size-info-placeholder');
+            if (sizeInfoPlaceholder) {
+                sizeInfoPlaceholder.innerHTML = `Size: ${formatBytes(originalSize)} &rarr; ${formatBytes(compressedSize)}`;
             }
+
+            // callGeminiAPI will now handle all retries (keys and models)
+            const data = await (currentMode === 'metadata'
+                ? getMetadataFromGemini(base64Data, mimeType, file.name, file.type)
+                : getPromptFromGemini(base64Data, mimeType, file.name));
+            
+            if (currentMode === 'metadata') {
+                renderMetadataCard(cardContentEl, data, index);
+            } else {
+                if (data && data.prompt) {
+                    let promptText = data.prompt.trim();
+                    if (promptText.endsWith('.')) {
+                        promptText = promptText.slice(0, -1);
+                    }
+
+                    const isSilhouette = document.getElementById('silhouette-toggle').checked;
+                    const isWhiteBackground = document.getElementById('white-background-toggle').checked;
+                    const isTransparentBackground = document.getElementById('transparent-background-toggle').checked;
+                    
+                    if (isSilhouette) promptText += ' silhoutte style';
+                    if (isWhiteBackground) promptText += ' white background';
+                    if (isTransparentBackground) promptText += ' transparent background';
+                    data.prompt = promptText.trim();
+                }
+                renderPromptCard(cardContentEl, data, index);
+            }
+        } catch (error) {
+            console.error(`Failed to process file ${file.name}:`, error);
+            renderErrorCard(cardContentEl, error, index);
+            throw error; // Propagate error to startGeneration for counting failures
         }
     }
 
@@ -355,8 +383,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderMetadataCard(cardContentEl, data, index) {
         const filteredTitle = filterForbiddenPhrases(data.title || 'N/A');
-         const filteredKeywords = (data.keywords && Array.isArray(data.keywords))
-            ? data.keywords.flatMap(kw => filterForbiddenPhrases(kw).split(/\s+/)).filter(Boolean)
+        const keywordsCount = document.getElementById('keywords-count').value;
+        const filteredKeywords = (data.keywords && Array.isArray(data.keywords))
+            ? data.keywords.map(kw => filterForbiddenPhrases(kw)).filter(Boolean).slice(0, keywordsCount)
             : [];
 
         let finalTitle = filteredTitle.charAt(0).toUpperCase() + filteredTitle.slice(1).toLowerCase();
@@ -449,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderErrorCard(cardContentEl, error, index) {
          cardContentEl.innerHTML = `
               <div class="text-center text-red-400 p-2 bg-red-900/20 rounded-md">
-                  <strong>Error:</strong> Auto-regeneration failed. ${error.message}
+                  <strong>Error:</strong> ${error.message}
               </div>
               <button class="regenerate-btn action-btn w-full" data-index="${index}">RETRY MANUALLY</button>
          `;
@@ -533,9 +562,15 @@ document.addEventListener('DOMContentLoaded', () => {
 Ensure the entire response is only the JSON object, without markdown formatting. Do not include forbidden phrases like 'black background' or 'white background'. Title should not contain commas or colons.`;
         } else {
             // Original logic for image analysis
-            let fileTypeContext = originalMimeType === 'image/svg+xml' 
-                ? 'The original image is an SVG. Please generate keywords suitable for vector graphics, such as "vector", "illustration", "scalable", "eps", "icon".'
-                : 'The original image is a raster file (JPG/PNG). Avoid vector-specific keywords like "vector", "eps", "illustration", or "scalable" unless the image content itself is clearly an illustration.';
+            let fileTypeContext = '';
+
+            if (fileType === 'video') {
+                fileTypeContext = `The user wants to generate metadata for a video based on this image. Please generate a title, description, and keywords suitable for stock video footage. Include relevant video keywords like "stock footage", "4k", "video clip", "animation", "motion graphics", etc., where appropriate.`;
+            } else if (originalMimeType === 'image/svg+xml') {
+                fileTypeContext = 'The original image is an SVG. Please generate keywords suitable for vector graphics, such as "vector", "illustration", "scalable", "eps", "icon".';
+            } else {
+                fileTypeContext = 'The original image is a raster file (JPG/PNG). Avoid vector-specific keywords like "vector", "eps", "illustration", or "scalable" unless the image content itself is clearly an illustration.';
+            }
 
             prompt = `Analyze this image (${fileName}). ${fileTypeContext} Context: - Target Platform: ${platform} - Requested File Type: ${fileType} - Title Style: ${titleStyle}. Generate metadata in a valid JSON object format. Your entire response must be only the JSON object, without any markdown formatting. The JSON object must have these exact keys: "title", "description", "keywords", "category". - "title": An SEO-friendly title of about ${titleWords} words. - "description": A compelling description of about ${descWords} words. - "keywords": An array of exactly ${keywordsCount} relevant string keywords. - "category": A single, most relevant category string. IMPORTANT: Do NOT include phrases like 'against a black background', 'on black background', 'dark background', 'black backround', or 'white background' in the title or keywords. Also, do not include commas (,) or colons (:) in the title.`;
         }
@@ -554,43 +589,65 @@ Ensure the entire response is only the JSON object, without markdown formatting.
             throw new Error("No API Keys available. Please add one in the API Key panel.");
         }
 
-        for (let i = 0; i < apiKeys.length; i++) {
-            const apiKey = apiKeys[currentApiKeyIndex];
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
-            const payload = { contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: mimeType, data: base64Data } }] }] };
+        const modelOptions = Array.from(elements.geminiModelSelect.options);
+        const startIndex = elements.geminiModelSelect.selectedIndex;
+        
+        // Create a reordered list of models to try, starting with the selected one.
+        const modelsToTry = [...modelOptions.slice(startIndex), ...modelOptions.slice(0, startIndex)];
 
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        for (const modelOption of modelsToTry) {
+            const selectedModel = modelOption.value;
+            console.log(`Trying model: ${selectedModel}`);
 
-                if (response.ok) {
-                    const result = await response.json();
-                    const textContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (!textContent) throw new Error("Received an empty response from the AI.");
-                    
-                    const cleanedText = textContent.replace(/```json/g, '').replace(/```/g, '').trim();
-                    try {
-                        return JSON.parse(cleanedText);
-                    } catch (e) {
-                        throw new Error("Received invalid JSON from the AI.");
+            // The existing loop to try all API keys for the current model
+            for (let i = 0; i < apiKeys.length; i++) {
+                const apiKey = apiKeys[currentApiKeyIndex];
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: mimeType, data: base64Data } }] }] };
+
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        const textContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if (!textContent) throw new Error("Received an empty response from the AI.");
+                        
+                        const cleanedText = textContent.replace(/```json/g, '').replace(/```/g, '').trim();
+                        try {
+                            console.log(`Success with model: ${selectedModel}`);
+                            // Update the UI to show which model was successful
+                            elements.geminiModelSelect.value = selectedModel;
+                            return JSON.parse(cleanedText);
+                        } catch (e) {
+                            throw new Error("Received invalid JSON from the AI.");
+                        }
                     }
-                }
 
-                if (response.status === 429) {
-                    console.warn(`API key at index ${currentApiKeyIndex} exceeded quota. Trying next key.`);
+                    if (response.status === 429) {
+                        console.warn(`API key at index ${currentApiKeyIndex} for model ${selectedModel} exceeded quota. Trying next key.`);
+                        currentApiKeyIndex = (currentApiKeyIndex + 1) % apiKeys.length;
+                        continue; // Try next key
+                    }
+                    
+                    // For other non-OK statuses, we will also try the next key
+                    const error = await response.json().catch(() => ({ error: { message: `API request failed with status ${response.status}` } }));
+                    console.error(`API Error for model ${selectedModel} with key index ${currentApiKeyIndex}:`, error.error?.message);
                     currentApiKeyIndex = (currentApiKeyIndex + 1) % apiKeys.length;
-                    continue; 
-                }
-                
-                const error = await response.json().catch(() => ({ error: { message: `API request failed with status ${response.status}` } }));
-                throw new Error(error.error?.message || `An unknown API error occurred.`);
 
-            } catch (error) {
-                console.error(`Error with API key at index ${currentApiKeyIndex}:`, error.message);
-                currentApiKeyIndex = (currentApiKeyIndex + 1) % apiKeys.length;
+                } catch (error) {
+                    // This catches network errors etc.
+                    console.error(`Network or other error with API key at index ${currentApiKeyIndex} for model ${selectedModel}:`, error.message);
+                    currentApiKeyIndex = (currentApiKeyIndex + 1) % apiKeys.length;
+                    // We continue to the next key in the loop
+                }
             }
+            // If we are here, it means all keys failed for the current model.
+            console.warn(`All API keys failed for model: ${selectedModel}. Trying next model.`);
         }
 
-        throw new Error("All available API keys failed or have exceeded their quota.");
+        // If we exit the outer loop, all models and all keys have failed.
+        throw new Error("All available models and API keys failed or have exceeded their quota.");
     }
 
     function getCardData(card) {
@@ -732,7 +789,7 @@ Ensure the entire response is only the JSON object, without markdown formatting.
         };
 
         let content, mimeType;
-        const filename = `Robi_Metadata.${format}`;
+        const filename = `CsvPro_Metadata.${format}`;
 
         if (format === 'csv') { content = convertToCSV(data); mimeType = 'text/csv;charset=utf-8;'; } 
         else if (format === 'json') { content = convertToJSON(data); mimeType = 'application/json;charset=utf-8;'; }
@@ -869,28 +926,30 @@ Ensure the entire response is only the JSON object, without markdown formatting.
         slider.style.background = bg;
     }
 
+    function initializeCustomPrompt() {
+        const isToggleChecked = localStorage.getItem('customPromptToggleState') === 'true';
+        elements.customPromptToggle.checked = isToggleChecked;
+        if (isToggleChecked) {
+            elements.customPromptContainer.classList.remove('hidden');
+        } else {
+            elements.customPromptContainer.classList.add('hidden');
+        }
+
+        const savedPrompt = localStorage.getItem('customPromptText');
+        if (savedPrompt) {
+            elements.customPromptTextarea.value = savedPrompt;
+        }
+    }
+
     // --- Initialize Everything ---
     
     elements.settingsBtn.addEventListener('click', () => openModal(elements.settingsPanel, elements.modalOverlay));
     elements.closeSettingsBtn.addEventListener('click', () => closeModal(elements.settingsPanel, elements.modalOverlay));
     elements.historyBtn.addEventListener('click', () => openModal(elements.historyPanel, elements.modalOverlay));
     elements.closeHistoryBtn.addEventListener('click', () => closeModal(elements.historyPanel, elements.modalOverlay));
-    
-    // Auth Modals
-    elements.loginBtn.addEventListener('click', () => openModal(elements.loginModal, elements.modalOverlay));
-    elements.closeLoginBtn.addEventListener('click', () => closeModal(elements.loginModal, elements.modalOverlay));
-    elements.logoutBtnCard.addEventListener('click', signOut);
-    elements.loginGoogleBtn.addEventListener('click', signInWithGoogle);
-
-    elements.profilePicBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent window click event from firing immediately
-        elements.profileCard.classList.toggle('hidden');
-    });
-
     elements.modalOverlay.addEventListener('click', () => {
         closeModal(elements.settingsPanel, elements.modalOverlay);
         closeModal(elements.historyPanel, elements.modalOverlay);
-        closeModal(elements.loginModal, elements.modalOverlay);
     });
     
     elements.themeColorSwatches.addEventListener('click', (e) => e.target.dataset.theme && applyTheme(e.target.dataset.theme));
@@ -899,8 +958,15 @@ Ensure the entire response is only the JSON object, without markdown formatting.
     applyTheme(localStorage.getItem('appTheme') || 'orange');
     applyBackground(localStorage.getItem('appBackground') || 'slate');
     switchMode('metadata'); 
-    loadApiKeys(); 
-    setupAuthListeners(); // Setup Supabase listeners
+    loadApiKeys();
+    initializeCustomPrompt();
+
+    // Auth event listeners
+    elements.loginBtn.addEventListener('click', loginWithGoogle);
+    elements.logoutBtn.addEventListener('click', logout);
+    elements.userProfile.addEventListener('click', () => {
+        elements.userDropdown.classList.toggle('hidden');
+    });
 
     elements.metadataBtn.addEventListener('click', () => switchMode('metadata'));
     elements.promptBtn.addEventListener('click', () => switchMode('prompt'));
@@ -962,9 +1028,8 @@ Ensure the entire response is only the JSON object, without markdown formatting.
         if (!elements.downloadBtn.contains(e.target) && !elements.downloadOptions.contains(e.target)) {
             elements.downloadOptions.classList.add('hidden');
         }
-        // Close profile card if clicked outside
-        if (elements.profileSection && !elements.profileSection.contains(e.target)) {
-            elements.profileCard.classList.add('hidden');
+         if (elements.userProfile && !elements.userProfile.contains(e.target) && elements.userDropdown && !elements.userDropdown.contains(e.target)) {
+            elements.userDropdown.classList.add('hidden');
         }
     });
 
@@ -979,10 +1044,16 @@ Ensure the entire response is only the JSON object, without markdown formatting.
     });
     
     elements.customPromptToggle.addEventListener('change', (e) => {
-        if (e.target.checked) {
+        const isChecked = e.target.checked;
+        localStorage.setItem('customPromptToggleState', String(isChecked));
+        if (isChecked) {
             elements.customPromptContainer.classList.remove('hidden');
         } else {
             elements.customPromptContainer.classList.add('hidden');
         }
+    });
+
+    elements.customPromptTextarea.addEventListener('input', () => {
+        localStorage.setItem('customPromptText', elements.customPromptTextarea.value);
     });
 });
