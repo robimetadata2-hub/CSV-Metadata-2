@@ -1,30 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-J544GVTT09"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-J544GVTT09');
-</script>
-
-    <meta name="google-site-verification" content="Tb85OmG7sUSXW_Q908WMazRdkjiwmXA7jLLxL6cuTXs" />
-
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Robi Metadata</title>
+    <!-- Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-J544GVTT09"></script>
+	<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-J544GVTT09');
+    </script>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase Client Library -->
+    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Link to your external CSS file -->
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="p-4 md:p-8">
@@ -33,7 +29,7 @@
         <header class="flex flex-wrap justify-between items-center mb-10">
             <!-- Logo and Title -->
             <div class="flex items-center gap-x-3">
-                <img src="logo.png" alt="Logo" class="h-10 w-10 rounded-full">
+                <img src="https://yt3.ggpht.com/tvitU0FQhBAvLgDS0EUvIHQvPNiMPAC09aF7OF3IiEBYSgJw0wTw_8WNVsNAXuoredsCNys1nQ=s176-c-k-c0x00ffffff-no-rj-mo" alt="Logo" class="h-10 w-10 rounded-full">
                 <h1 class="text-3xl font-bold text-white">Robi Metadata</h1>
             </div>
             <nav class="flex items-center gap-x-2 md:gap-x-4 mt-4 md:mt-0">
@@ -47,20 +43,15 @@
                 <button id="metadata-btn" class="nav-btn font-semibold py-2 px-4 rounded-lg transition-all">Generate MetaData</button>
                 <button id="prompt-btn" class="nav-btn font-semibold py-2 px-4 rounded-lg transition-all">Image To Prompt</button>
                 
-                <!-- New Auth Section -->
-                <div class="relative">
-                    <button id="login-btn" class="action-btn bg-blue-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded-lg transition-all">Login</button>
-                    
-                    <div id="profile-section" class="hidden">
-                        <button id="profile-pic-btn">
-                            <img id="profile-pic-img-nav" src="" alt="User Profile" class="w-10 h-10 rounded-full border-2 border-slate-500 hover:border-pink-500 transition">
-                        </button>
-                
-                        <div id="profile-card" class="hidden absolute right-0 mt-2 w-64 main-panel border rounded-xl p-4 z-20 text-center">
-                            <img id="profile-pic-img-card" src="" alt="User Profile" class="w-20 h-20 rounded-full mx-auto mb-4 border-4 border-slate-600">
-                            <p id="profile-email" class="text-white font-semibold mb-4 truncate"></p>
-                            <button id="logout-btn-card" class="w-full action-btn bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-all">Logout</button>
-                        </div>
+                <!-- User Authentication Section -->
+                <div class="relative ml-4">
+                    <button id="login-btn"  class="nav-btn font-semibold py-2 px-4 rounded-lg transition-all inactive extension-btn">Login</button>
+                    <div id="user-profile" class="hidden items-center gap-x-2 cursor-pointer">
+                        <img id="user-avatar" src="https://placehold.co/40x40/1e293b/cbd5e1?text=U" alt="User Avatar" class="h-10 w-10 rounded-full">
+                    </div>
+                    <div id="user-dropdown" class="absolute right-0 mt-2 w-56 bg-slate-800 border border-slate-700 rounded-md shadow-lg py-1 z-50 hidden">
+                        <p id="user-email" class="px-4 py-2 text-sm text-gray-300 truncate font-medium border-b border-slate-700"></p>
+                        <button id="logout-btn" class="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-700">Logout</button>
                     </div>
                 </div>
             </nav>
@@ -134,7 +125,7 @@
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                                     </svg>
                                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-900 text-gray-300 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                        When enabled, "isolaetd on white background" will be added to the end of the generated prompt.
+                                        When enabled, "white background" will be added to the end of the generated prompt.
                                         <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900"></div>
                                     </div>
                                 </div>
@@ -156,7 +147,7 @@
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                                     </svg>
                                     <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-slate-900 text-gray-300 text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                                        When enabled, "isolated transparent background" will be added to the end of the generated prompt.
+                                        When enabled, "transparent background" will be added to the end of the generated prompt.
                                         <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-slate-900"></div>
                                     </div>
                                 </div>
@@ -177,21 +168,22 @@
                             <option value="png">PNG</option>
                             <option value="svg">SVG</option>
                             <option value="eps">EPS (Vector)</option>
+                            <option value="video">Video</option>
                         </select>
                     </div>
-                     <!-- Title Options -->
-                     <div class="p-6 main-panel border rounded-xl space-y-4" data-mode="metadata">
+                      <!-- Title Options -->
+                      <div class="p-6 main-panel border rounded-xl space-y-4" data-mode="metadata">
                           <label for="title-options" class="block text-sm font-medium text-gray-400">Title Options</label>
                           <select id="title-options" class="w-full p-2 rounded-lg custom-select">
                               <option value="none">Creative</option>
                               <option value="suffix_silhouette">Append: silhouette</option>
-                              <option value="suffix_isolated_on_white_bg">Append: isolated on white background</option>
-                              <option value="suffix_isolated_on_transparent_bg">Append: isolated on transparent background</option>
+                              <option value="suffix_white_bg">Append: white background</option>
+                              <option value="suffix_transparent_bg">Append: transparent background</option>
                               <option value="suffix_illustration">Append: illustration </option>
-                              <option value="suffix_vector_art">Append: vector </option>
+                              <option value="suffix_vector">Append: vector </option>
                           </select>
                           <input type="text" id="custom-title-suffix" placeholder="Enter custom text to append" class="w-full p-2 rounded-lg custom-input">
-                     </div>
+                      </div>
                     <!-- Custom Prompt -->
                     <div class="p-6 main-panel border rounded-xl space-y-4" data-mode="metadata">
                         <div class="flex items-center justify-between">
@@ -216,22 +208,34 @@
                     </div>
 
                       <!-- Platforms -->
-                       <div class="p-6 main-panel border rounded-xl" data-mode="metadata">
-                           <label for="platforms" class="block mb-2 text-sm font-medium text-gray-400">Platforms</label>
-                           <select id="platforms" class="w-full p-2 rounded-lg custom-select">
-                               <option value="Genaral">Genaral</option>
-                               <option value="Adobe Stock">Adobe Stock</option>
-                               <option value="Shutterstock">Shutterstock</option>
-                               <option value="Freepik">Freepik</option>
-                               <option value="Vecteezy">Vecteezy</option>
-                           </select>
+                        <div class="p-6 main-panel border rounded-xl" data-mode="metadata">
+                            <label for="platforms" class="block mb-2 text-sm font-medium text-gray-400">Platforms</label>
+                            <select id="platforms" class="w-full p-2 rounded-lg custom-select">
+                                <option value="Genaral">Genaral</option>
+                                <option value="Adobe Stock">Adobe Stock</option>
+                                <option value="Shutterstock">Shutterstock</option>
+                                <option value="Freepik">Freepik</option>
+                                <option value="Vecteezy">Vecteezy</option>
+                            </select>
                       </div>
 
                     <!-- Gemini API Key -->
                     <div id="api-key-panel" class="p-6 main-panel border rounded-xl" data-mode="metadata">
+                        <div class="mb-4">
+                            <label for="gemini-model" class="block mb-2 text-sm font-medium text-gray-400">Gemini Model</label>
+                            <select id="gemini-model" class="w-full p-2 rounded-lg custom-select">
+                   
+                                <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash-Lite</option>
+                                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                                <option value="gemini-2.5-flash-lite-preview">Gemini 2.5 Flash-Lite Preview</option>
+                                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
+                                <option value="gemini-2.5-flash-preview">Gemini 2.5 Flash Preview</option>
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                            </select>
+                        </div>
                         <h2 class="text-xl font-semibold text-white mb-4">Gemini API Keys</h2>
                         <p class="text-sm text-gray-400 mb-2">Add one or more Gemini API keys. The app will automatically switch to the next key if one reaches its usage limit.</p>
-<a href="https://aistudio.google.com/app/apikey" target="_blank" id="get-api-key-btn" class="inline-block text-center w-full mb-4 action-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">Get API Key</a>
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank" id="get-api-key-btn" class="inline-block text-center w-full mb-4 action-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">Get API Key</a>
                         <div id="api-key-list" class="space-y-3 mb-4">
                             <!-- API Key inputs will be dynamically inserted here -->
                         </div>
@@ -259,32 +263,32 @@
                 <div id="results-area" class="hidden">
                      <div class="main-panel border rounded-xl p-6">
                          <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
-                              <h2 id="results-title" class="text-2xl font-semibold text-white">Generated Data</h2>
-                              <div id="action-buttons" class="flex gap-4">
-                                  <button id="save-project-btn" class="action-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 hidden">save project</button>
-                                  <!-- Download Dropdown -->
-                                  <div class="relative inline-block text-left">
-                                      <div>
-                                          <button type="button" id="download-btn" class="inline-flex justify-center w-full rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-green-600 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-green-500">
-                                              Download All
-                                              <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                              </svg>
-                                          </button>
-                                      </div>
-                                      <div id="download-options" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-slate-700 ring-1 ring-black ring-opacity-5 hidden z-10">
-                                          <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-                                              <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="csv">Download CSV</a>
-                                              <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="json">Download JSON</a>
-                                              <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="xml">Download XML</a>
-                                          </div>
-                                      </div>
-                                  </div>
-                                  <button id="clear-all-btn" class="action-btn bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 flex items-center gap-2">
-                                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
-                                      Clear All
-                                  </button>
-                              </div>
+                             <h2 id="results-title" class="text-2xl font-semibold text-white">Generated Data</h2>
+                             <div id="action-buttons" class="flex gap-4">
+                                 <button id="save-project-btn" class="action-btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 hidden">save project</button>
+                                 <!-- Download Dropdown -->
+                                 <div class="relative inline-block text-left">
+                                     <div>
+                                         <button type="button" id="download-btn" class="inline-flex justify-center w-full rounded-md border border-gray-600 shadow-sm px-4 py-2 bg-green-600 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-green-500">
+                                             Download All
+                                             <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                             </svg>
+                                         </button>
+                                     </div>
+                                     <div id="download-options" class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg bg-slate-700 ring-1 ring-black ring-opacity-5 hidden z-10">
+                                         <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                                             <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="csv">Download CSV</a>
+                                             <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="json">Download JSON</a>
+                                             <a href="#" class="block px-4 py-2 text-sm text-gray-300 hover:bg-slate-600" role="menuitem" data-format="xml">Download XML</a>
+                                         </div>
+                                     </div>
+                                 </div>
+                                 <button id="clear-all-btn" class="action-btn bg-red-600 hover:bg-red-500 text-white font-bold py-2 px-4 rounded-lg transition-all duration-300 flex items-center gap-2">
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                                     Clear All
+                                 </button>
+                             </div>
                          </div>
 
                         <!-- Generation Controls Panel -->
@@ -298,11 +302,11 @@
                                 </div>
                                 <!-- Generating State -->
                                 <div id="generating-view" class="hidden">
-                                     <h2 class="text-2xl font-bold text-white mb-4">Generating...</h2>
-                                     <div class="w-full bg-slate-700 rounded-full h-4 relative overflow-hidden">
-                                         <div id="progress-bar" class="h-4 rounded-full" style="width: 0%;"></div>
-                                     </div>
-                                     <p id="progress-text" class="text-gray-300 mt-3 text-sm">Processing 0 of 0...</p>
+                                    <h2 class="text-2xl font-bold text-white mb-4">Generating...</h2>
+                                    <div class="w-full bg-slate-700 rounded-full h-4 relative overflow-hidden">
+                                        <div id="progress-bar" class="h-4 rounded-full" style="width: 0%;"></div>
+                                    </div>
+                                    <p id="progress-text" class="text-gray-300 mt-3 text-sm">Processing 0 of 0...</p>
                                 </div>
                             </div>
                         </div>
@@ -349,7 +353,7 @@
                 <div class="mb-6">
                     <h3 class="text-lg font-semibold text-white mb-3">Theme Color</h3>
                     <div id="theme-color-swatches" class="flex gap-4">
-                        <button class="color-swatch w-8 h-8 rounded-full bg-[#f97316]" data-theme="orange"></button>
+					<button class="color-swatch w-8 h-8 rounded-full bg-[#f97316]" data-theme="orange"></button>
                         <button class="color-swatch w-8 h-8 rounded-full bg-[#ec4899]" data-theme="pink"></button>
                         <button class="color-swatch w-8 h-8 rounded-full bg-[#3b82f6]" data-theme="blue"></button>
                         <button class="color-swatch w-8 h-8 rounded-full bg-[#22c55e]" data-theme="green"></button>
@@ -382,39 +386,9 @@
                 </div>
             </div>
         </div>
-
-        <!-- Login Modal -->
-        <div id="login-modal" class="modal-panel fixed inset-0 flex items-center justify-center z-50 opacity-0 pointer-events-none scale-95">
-            <div class="main-panel border-2 border-slate-700 p-8 rounded-3xl w-full max-w-lg relative overflow-hidden shadow-2xl text-center">
-                <!-- Close Button -->
-                <button id="close-login-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white z-20">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-        
-                <!-- Founder Card -->
-                <div class="founder-card absolute top-4 right-4 md:top-6 md:right-6 bg-slate-900/50 backdrop-blur-sm p-3 rounded-xl flex items-center gap-3 z-10 text-left">
-                    <div>
-                        <p class="font-bold text-white text-sm">MD. RABIUL ISLAM</p>
-                        <p class="text-xs text-slate-300">Founder</p>
-                        <p class="text-xs text-slate-300">Robi Technology</p>
-                    </div>
-                    <img src="robi.png" alt="Founder" class="w-12 h-12 rounded-full border-2 border-slate-500">
-                </div>
-        
-                <!-- Main Content -->
-                <div class="w-full flex flex-col justify-center items-center h-full pt-16">
-                    <h2 class="text-5xl font-bold text-white mb-4">Welcome Back!</h2>
-                    <p class="text-gray-400 mb-8">Please login to continue generating Metadata</p>
-                    <button id="login-google-btn" class="w-full max-w-xs flex items-center justify-center gap-3 text-white font-bold py-3 px-4 rounded-lg transition-all text-lg">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google G Logo" class="w-6 h-6">
-                        Login with Google
-                    </button>
-                </div>
-            </div>
-        </div>
-
     </div>
-    <!-- Link to your external JS file -->
+    <!-- Custom JS -->
     <script src="script.js"></script>
 </body>
 </html>
+
